@@ -7,6 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Checkout</title>
     <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 
     <style>
@@ -45,17 +46,46 @@
                     <p class="card-text">$3.25</p>
                 </div>
             </div>
-            <button class="btn btn-primary" id="btn-checkout"
-                style="float: right; position: absolute; right: 0; bottom: 0; margin: 2em;">Checkout</button>
+            <button
+  style="background-color:#6772E5;color:#FFF;padding:8px 12px;border:0;border-radius:4px;font-size:1em"
+  id="checkout-button-sku_FalwChndZbc4AA"
+  role="link"
+>
+  Checkout
+</button>
+
         </div>
     </div>
 
+    <div id="error-message"></div>
+
+
     <script>
         $(function () {
-            $('#btn-checkout').on('click', () => {
-                var STRIPE_KEY = process.env.STRIPE_API_KEY
-                // Here Goes your Stripe Logic
-            })
+            var checkoutButton = document.getElementById('checkout-button-sku_FalwChndZbc4AA');
+  checkoutButton.addEventListener('click', function () {
+    // When the customer clicks on the button, redirect
+    // them to Checkout.
+    stripe.redirectToCheckout({
+      items: [{sku: 'sku_FalwChndZbc4AA', quantity: 1}],
+
+      // Do not rely on the redirect to the successUrl for fulfilling
+      // purchases, customers may not always reach the success_url after
+      // a successful payment.
+      // Instead use one of the strategies described in
+      // https://stripe.com/docs/payments/checkout/fulfillment
+      successUrl: '/order_success.html?session_id={CHECKOUT_SESSION_ID}',
+      cancelUrl: '/order.html',
+    })
+    .then(function (result) {
+      if (result.error) {
+        // If `redirectToCheckout` fails due to a browser or network
+        // error, display the localized error message to your customer.
+        var displayError = document.getElementById('error-message');
+        displayError.textContent = result.error.message;
+      }
+    });
+  });
         })
   
     </script>
